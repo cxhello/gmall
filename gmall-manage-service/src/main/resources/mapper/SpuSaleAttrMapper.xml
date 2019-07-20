@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cxhello.gmall.manage.mapper.SpuSaleAttrMapper">
+    <resultMap id="spuSaleAttrMap" type="com.cxhello.gmall.bean.SpuSaleAttr" autoMapping="true">
+        <id property="id" column="id"></id>
+        <collection property="spuSaleAttrValueList" ofType="com.cxhello.gmall.bean.SpuSaleAttrValue" autoMapping="true">
+            <id property="id" column="sale_attr_value_id"></id>
+        </collection>
+    </resultMap>
+    <select id="selectSpuSaleAttrList" resultMap="spuSaleAttrMap">
+        SELECT ssa.`id`,ssa.`sale_attr_id`,ssa.`sale_attr_name`,ssa.`spu_id`,
+            ssav.`id` sale_attr_value_id,
+            ssav.`sale_attr_value_name`
+        FROM spu_sale_attr ssa INNER JOIN
+            spu_sale_attr_value ssav ON ssa.`spu_id`=ssav.`spu_id` AND
+            ssa.`sale_attr_id`=ssav.`sale_attr_id`
+            WHERE ssa.`spu_id`=#{spuId}
+    </select>
+
+
+    <select id="selectSpuSaleAttrListCheckBySku" resultMap="spuSaleAttrMap">
+        SELECT ssa.`id`,ssa.`sale_attr_id`,ssa.`sale_attr_name`,ssa.`spu_id`,
+                ssav.`id` sale_attr_value_id,ssav.`sale_attr_value_name`,
+                skav.`sale_attr_value_name`,skav.`sku_id`,
+                IF(skav.`sku_id` IS NULL,0,1) is_checked
+        FROM spu_sale_attr ssa
+                INNER JOIN spu_sale_attr_value ssav ON
+                ssa.`spu_id`=ssav.`spu_id` AND ssa.`sale_attr_id`=ssav.`sale_attr_id`
+                LEFT JOIN sku_sale_attr_value skav ON
+                skav.`sale_attr_id`=ssa.`sale_attr_id` AND skav.`sku_id`=#{arg0}
+                AND skav.`sale_attr_value_id`=ssav.`id` WHERE ssa.`spu_id`=#{arg1}
+        ORDER BY ssav.`sale_attr_id`,ssav.`id`;
+    </select>
+</mapper>

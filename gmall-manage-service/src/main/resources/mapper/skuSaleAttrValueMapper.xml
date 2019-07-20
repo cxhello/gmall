@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cxhello.gmall.manage.mapper.SkuSaleAttrValueMapper">
+    <resultMap id="skuSaleAttrValueMap" type="com.cxhello.gmall.bean.SkuSaleAttrValue" autoMapping="true">
+        <id property="id" column="id"></id>
+    </resultMap>
+
+    <select id="selectSkuSaleAttrValueListBySpu" resultMap="skuSaleAttrValueMap">
+        SELECT
+            sale_attr_value_id,
+            sku_id,
+            sale_attr_value_name
+        FROM
+            sku_sale_attr_value ssav,
+            sku_info si
+        WHERE
+            ssav.sku_id = si.id
+        AND si.spu_id = #{spuId}
+        ORDER BY si.id ,ssav.sale_attr_id;
+       /* select ssav.sku_id,ssav.sale_attr_value_id,ssav.sale_attr_value_name
+        from sku_info si INNER JOIN sku_sale_attr_value ssav on si.id=ssav.sku_id where si.spu_id=58;
+*/
+    </select>
+</mapper>
