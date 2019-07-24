@@ -11,10 +11,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author CaiXiaoHui
@@ -32,6 +34,7 @@ public class CartController {
     @Reference
     private ManageService manageService;
 
+
     @RequestMapping("addToCart")
     @LoginRequire(autoRedirect = false)
     public String addToCart(HttpServletRequest request, HttpServletResponse response){
@@ -47,8 +50,25 @@ public class CartController {
             //用户登录情况下添加购物车
             cartInfoService.addToCart(skuId,userId,Integer.parseInt(skuNum));
         }else{
-            //用户未登录情况下添加购物车,放入cookie中
+            //第一种方法:用户未登录情况下添加购物车,放入cookie中
             cartCookieHandler.addToCart(request,response,skuId,userId,Integer.parseInt(skuNum));
+            //第二种方法:用户未登录情况下添加购物车,放入redis中
+            /*String userKey = "cart";
+            String uuid=UUID.randomUUID().toString();
+            Cookie[] cookies = request.getCookies();
+            if(cookies!=null && cookies.length>0){
+                for (Cookie cookie : cookies) {
+                    if(userKey.equals(cookie.getName())){
+                        uuid = cookie.getValue();
+                    }else {
+                        uuid = UUID.randomUUID().toString();
+                    }
+                }
+            }
+            Cookie cookie = new Cookie(userKey,uuid);
+            //添加cookie
+            response.addCookie(cookie);
+            cartInfoService.addToCart(skuId,Integer.parseInt(skuNum),uuid);*/
         }
 
         //保存skuInfo

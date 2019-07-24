@@ -54,4 +54,12 @@ public interface CartInfoService {
      * @return
      */
     public List<CartInfo> loadCartCache(String userId);
+
+    /**
+     *
+     * @param skuId
+     * @param skuNum
+     * @param uuid
+     */
+    void addToCart(String skuId, Integer skuNum, String uuid);
 }

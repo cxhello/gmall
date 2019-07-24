@@ -16,6 +16,8 @@ import redis.clients.jedis.Jedis;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author CaiXiaoHui
@@ -199,5 +201,40 @@ public class CartInfoServiceImpl implements CartInfoService {
         }
         jedis.close();
         return cartInfoList;
+    }
+
+    @Override
+    public void addToCart(String skuId, Integer skuNum, String uuid) {
+        Jedis jedis = redisUtil.getJedis();
+        String userCartKey = CartConst.USER_KEY_PREFIX+uuid+CartConst.USER_CART_KEY_SUFFIX;
+        //获取缓存中的所有数据
+        Map<String, String> map = jedis.hgetAll(userCartKey);
+        boolean isFlag = false;
+        for (String sid : map.keySet()) {
+            if(sid.equals(skuId)){
+                String cartInfoJson = map.get(sid);
+                CartInfo cartInfo = JSON.parseObject(cartInfoJson, CartInfo.class);
+                cartInfo.setSkuNum(cartInfo.getSkuNum()+skuNum);
+                map.put(sid,JSON.toJSONString(cartInfo));
+                isFlag=true;
+            }
+        }
+        if(!isFlag){
+            // 根据skuId 获取cartInfo
+            SkuInfo skuInfo = manageService.getSkuInfo(skuId);
+
+            CartInfo cartInfo = new CartInfo();
+            cartInfo.setSkuId(skuId);
+            cartInfo.setCartPrice(skuInfo.getPrice());
+            cartInfo.setSkuPrice(skuInfo.getPrice());
+            cartInfo.setSkuName(skuInfo.getSkuName());
+            cartInfo.setImgUrl(skuInfo.getSkuDefaultImg());
+            cartInfo.setUserId(null);
+            cartInfo.setSkuNum(skuNum);
+            map.put(cartInfo.getSkuId(),JSON.toJSONString(cartInfo));
+        }
+        // 将map 放入缓存
+        jedis.hmset(userCartKey,map);
+        jedis.close();
     }
 }
